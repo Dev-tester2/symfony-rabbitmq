@@ -1,0 +1,64 @@
+version: '3.9'
+services:
+  nginx:
+    container_name: nginx-crossmessages
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - '80:80'
+    volumes:
+      - ./:/var/www/symfony_docker
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - database
+  database:
+    container_name: postgres-crossmessages
+    image: postgres:${POSTGRES_VERSION:-15}-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-0AkQn3Tpew}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data:rw
+  php:
+    container_name: php-crossmessages
+    build:
+      context: ./docker/php
+    restart: always
+    ports:
+      - '9000:9000'
+    volumes:
+      - ./:/var/www/symfony_docker
+      - ./docker/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    depends_on:
+      - database
+  redis:
+    container_name: redis-crossmessages
+    image: redis:6.2-alpine  
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass 7hJzPkOsfT2zcsLlx5Wuiohl1rmKNy3C
+    volumes:
+      - redis:/data
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-crossmessage
+    ports:
+        - '5672:5672'
+        - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+        - rabbitmq:/var/lib/rabbitmq    
+volumes:
+  redis:
+  db:
+  rabbitmq:  
+    
