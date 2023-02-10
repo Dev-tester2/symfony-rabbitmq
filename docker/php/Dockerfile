@@ -4,10 +4,10 @@ ARG USER_ID=1001
 ARG GROUP_ID=1002
 
 RUN apt update \
-    && apt install -y zlib1g-dev g++ git libicu-dev libxml2-dev libpq-dev zip libzip-dev zip \
+    && apt install -y zlib1g-dev g++ git libicu-dev libxml2-dev libpq-dev zip libzip-dev zip librabbitmq-dev \
     && docker-php-ext-install intl soap opcache pdo pdo_pgsql pgsql \
-    && pecl install apcu \
-    && docker-php-ext-enable apcu \
+    && pecl install apcu amqp \
+    && docker-php-ext-enable apcu amqp \
     && docker-php-ext-configure zip \
     && docker-php-ext-install zip \
 	&& docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
